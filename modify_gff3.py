@@ -72,9 +72,6 @@ def process_gff3(input_file, output_file):
     output_features = []
 
     for seqid, features in features_by_seqid.items():
-        # Sort features by start coordinate
-        features.sort(key=lambda x: x['start'])
-
         # Collect gene/transcript features to identify exons
         exons_by_parent = defaultdict(list)
 
@@ -89,28 +86,50 @@ def process_gff3(input_file, output_file):
         gene_regions = []
 
         for parent_id, exons in exons_by_parent.items():
-            # Sort exons by genomic coordinates
+            # Sort exons by genomic coordinates (ascending order)
             exons.sort(key=lambda x: x['start'])
             strand = exons[0]['strand']
             source = exons[0]['source']
 
-            # Determine start codon and stop codon positions
-            if strand == '+':
-                # Start codon at start of first exon
-                start_codon_start = exons[0]['start']
-                start_codon_end = start_codon_start + 2  # Start codon is 3 bases
-                # Stop codon at end of last exon
-                stop_codon_end = exons[-1]['end']
-                stop_codon_start = stop_codon_end - 2
-            elif strand == '-':
-                # Start codon at end of first exon
-                start_codon_end = exons[0]['end']
-                start_codon_start = start_codon_end - 2
-                # Stop codon at start of last exon
-                stop_codon_start = exons[-1]['start']
-                stop_codon_end = stop_codon_start + 2
+            # Create transcription order exons for adjusting exons
+            if strand == '-':
+                transcription_exons = exons[::-1]
             else:
-                continue  # Skip if strand information is missing
+                transcription_exons = exons
+
+            # Adjust exons to exclude start and stop codons
+            # Start codon adjustment
+            if strand == '+':
+                start_codon_start = transcription_exons[0]['start']
+                start_codon_end = start_codon_start + 2  # Start codon is 3 bases
+                transcription_exons[0]['start'] = start_codon_end + 1
+            else:
+                start_codon_end = transcription_exons[0]['end']
+                start_codon_start = start_codon_end - 2
+                transcription_exons[0]['end'] = start_codon_start - 1
+
+            # Stop codon adjustment
+            if strand == '+':
+                stop_codon_end = transcription_exons[-1]['end']
+                stop_codon_start = stop_codon_end - 2
+                transcription_exons[-1]['end'] = stop_codon_start - 1
+            else:
+                stop_codon_start = transcription_exons[-1]['start']
+                stop_codon_end = stop_codon_start + 2
+                transcription_exons[-1]['start'] = stop_codon_end + 1
+
+            # Update exons in genomic order after adjustment
+            if strand == '-':
+                exons = transcription_exons[::-1]
+            else:
+                exons = transcription_exons
+
+            # Remove exons that have start > end after adjustment
+            adjusted_exons = []
+            for exon in exons:
+                if exon['start'] <= exon['end']:
+                    adjusted_exons.append(exon)
+            exons = adjusted_exons
 
             # Add start codon feature
             start_codon_attributes = f"ID=start_codon:{parent_id};Parent={parent_id}"
@@ -144,7 +163,25 @@ def process_gff3(input_file, output_file):
             output_features.append(stop_codon_feature)
             gene_regions.append((stop_codon_start, stop_codon_end))
 
-            # Add intron features
+            # Collect exon regions and update exon lines
+            for exon in exons:
+                gene_regions.append((exon['start'], exon['end']))
+                # Update the exon line with adjusted coordinates
+                exon_fields = [
+                    exon['seqid'],
+                    exon['source'],
+                    exon['type'],
+                    str(exon['start']),
+                    str(exon['end']),
+                    exon['score'],
+                    exon['strand'],
+                    exon['phase'],
+                    exon['attributes']
+                ]
+                exon['line'] = '\t'.join(exon_fields)
+                output_features.append(exon)
+
+            # Calculate introns using exons in genomic order
             for i in range(len(exons) - 1):
                 intron_start = exons[i]['end'] + 1
                 intron_end = exons[i + 1]['start'] - 1
@@ -164,11 +201,7 @@ def process_gff3(input_file, output_file):
                     output_features.append(intron_feature)
                     gene_regions.append((intron_start, intron_end))
 
-            # Collect exon regions
-            for exon in exons:
-                gene_regions.append((exon['start'], exon['end']))
-
-        # Merge gene regions to find intergenic regions
+        # Merge gene regions to find intergenic regions, considering all strands
         gene_regions.sort()
         merged_gene_regions = []
         for start, end in gene_regions:
@@ -228,23 +261,12 @@ def process_gff3(input_file, output_file):
     # Now that we've added intergenic regions, start/stop codons, and introns,
     # we proceed to remove all features that are not exons, start/stop codons, introns, or intergenic regions.
 
-    # Collect the features to keep
-    features_to_keep = []
-
-    for seqid, features in features_by_seqid.items():
-        for feature in features:
-            if feature['type'] in {'exon'}:
-                features_to_keep.append(feature)
-
-    # Combine features from output_features (which includes the new features added)
-    features_to_keep.extend(output_features)
-
     # Filter out any features that are not the desired types
     desired_feature_types = {'exon', 'start_codon', 'stop_codon', 'intron', 'intergenic_region'}
-    filtered_features = [f for f in features_to_keep if f['type'] in desired_feature_types]
+    filtered_features = [f for f in output_features if f['type'] in desired_feature_types]
 
     # Sort features by seqid and start position
-    filtered_features.sort(key=lambda x: (x['seqid'], x['start']))
+    filtered_features.sort(key=lambda x: (x['seqid'], x['start'], x['end']))
 
     # Write the output GFF3 file
     with open(output_file, 'w') as outfile:
@@ -256,18 +278,22 @@ def process_gff3(input_file, output_file):
             outfile.write(f"##sequence-region {seqid} 1 {length}\n")
 
         for feature in filtered_features:
-            fields = [
-                feature['seqid'],
-                feature['source'],
-                feature['type'],
-                str(feature['start']),
-                str(feature['end']),
-                feature['score'],
-                feature['strand'],
-                feature['phase'],
-                feature['attributes']
-            ]
-            outfile.write('\t'.join(fields) + '\n')
+            if 'line' in feature:
+                # Use updated exon line with adjusted coordinates
+                outfile.write(feature['line'] + '\n')
+            else:
+                fields = [
+                    feature['seqid'],
+                    feature['source'],
+                    feature['type'],
+                    str(feature['start']),
+                    str(feature['end']),
+                    feature['score'],
+                    feature['strand'],
+                    feature['phase'],
+                    feature['attributes']
+                ]
+                outfile.write('\t'.join(fields) + '\n')
 
         # Write any FASTA sequences if present
         if fasta_lines:
