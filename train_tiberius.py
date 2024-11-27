@@ -110,3 +110,8 @@ model.summary()
 model.fit(x=x_seq, y=y_seq,
           epochs=config["num_epochs"],
           batch_size=config["batch_size"])
+
+# Save the trained model
+model_save_path = os.path.join(out_dir, 'tiberius_model.h5')
+model.save(model_save_path)
+print(f"Model saved to {model_save_path}")
