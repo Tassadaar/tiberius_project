@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO: fix the bug where sometimes start and stop codons are swapped
+
 import sys
 from collections import defaultdict
 
