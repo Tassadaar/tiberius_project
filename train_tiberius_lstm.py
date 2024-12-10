@@ -24,8 +24,8 @@ out_dir = 'test_train/'
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)
 
-genome_path = f'{inp_data_dir}/genome.fa'
-annot_path= f'{inp_data_dir}/annot.gtf'
+genome_path = "data/Ergobibamus_cyprinoides_CL.scaffolds.edited.fasta"
+annot_path= "data/Ergobibamus_cyprinoides_CL.edited.gtf"
 
 
 pred_gtf = PredictionGTF(
