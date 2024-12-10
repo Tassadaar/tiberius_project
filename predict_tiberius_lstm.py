@@ -15,7 +15,7 @@ from Bio.Seq import Seq
 from bin.tiberius import assemble_transcript, check_in_frame_stop_codons
 
 # CHANGE MODEL PATH IF NEEDED
-model_path = "test_train/model_weights/tiberius_weights"
+model_path = "test_train/tiberius_lstm.h5"
 batch_size = 2
 seq_len = 500004
 strand = '+'
