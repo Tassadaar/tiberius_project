@@ -1,9 +1,9 @@
 import sys, os
 # ADD PATH TO LEARN MSA HERE (if not installed with pip)
-learn_msa_path = '../../../install/learnMSA/'
+learn_msa_path = ''
 sys.path.insert(0, learn_msa_path)
 
-sys.path.append("../../bin")
+sys.path.append("bin")
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 import tensorflow.keras as keras
