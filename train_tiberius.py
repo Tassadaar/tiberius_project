@@ -97,7 +97,7 @@ def main():
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    genome_path = "data/carpediemonas_membranifera.fasta"
+    genome_path = "data/carpediemonas_membranifera_simple.fasta"
     annot_path= "data/carpediemonas_membranifera.gtf"
 
 
