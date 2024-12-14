@@ -21,8 +21,8 @@ out_dir = 'test_train/'
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)
 
-genome_path = "data/Ergobibamus_cyprinoides_CL.scaffolds.edited.fasta"
-annot_path= "data/Ergobibamus_cyprinoides_CL.edited.gtf"
+genome_path = "data/carpediemonas_membranifera.fasta"
+annot_path= "data/carpediemonas_membranifera.gtf"
 
 
 pred_gtf = PredictionGTF(
@@ -42,6 +42,10 @@ x_seq, y_seq, _ = pred_gtf.load_inp_data(
     strand=strand,
     chunk_coords=True, softmask=True, pad=False
 )
+
+train_size = int(0.8 * len(x_seq))
+x_train, x_val = x_seq[:train_size], x_seq[train_size:]
+y_train, y_val = y_seq[:train_size], y_seq[train_size:]
 
 # see lstm_model documentation for more arguments
 config = {
@@ -107,9 +111,12 @@ f1loss = custom_cce_f1_loss(config["loss_f1_factor"], batch_size=config["batch_s
 model.compile(loss=f1loss, optimizer=adam, metrics=['accuracy'])
 model.summary()
 
-model.fit(x=x_seq, y=y_seq,
-          epochs=config["num_epochs"],
-          batch_size=config["batch_size"])
+model.fit(
+    x=x_train, y=y_train,
+    epochs=config["num_epochs"],
+    batch_size=config["batch_size"],
+    validation_data=(x_val, y_val)
+)
 
 # Save the trained model
 model_save_path = os.path.join(out_dir, 'tiberius_model.h5')
