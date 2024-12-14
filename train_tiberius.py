@@ -184,7 +184,7 @@ def main():
     adam = Adam(learning_rate=config["lr"])
     f1loss = custom_cce_f1_loss(config["loss_f1_factor"], batch_size=config["batch_size"], from_logits=True)
 
-    model.compile(loss=f1loss, optimizer=adam, metrics=['accuracy', 'Precision', 'Recall', 'F1-score'])
+    model.compile(loss=f1loss, optimizer=adam, metrics=['accuracy', 'Precision', 'Recall'])
     model.summary()
 
     history = model.fit(
