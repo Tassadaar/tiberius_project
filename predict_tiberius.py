@@ -10,12 +10,13 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 from bin.eval_model_class import PredictionGTF
+from bin.models import Cast
 from Bio import SeqIO
 from Bio.Seq import Seq
 from bin.tiberius import assemble_transcript, check_in_frame_stop_codons
 
 # CHANGE MODEL PATH IF NEEDED
-model_path = "data/tiberius_model_CM.h5"
+model_path = "test_train/tiberius_model_CM.h5"
 batch_size = 2
 seq_len = 500004
 strand = '+'
