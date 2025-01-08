@@ -1,0 +1,68 @@
+### Annotation Evaluation Report ###
+
+Reference GTF File: data/Ergobibamus_cyprinoides_CL.edited.gtf
+Predicted GTF File: test_train/tiberius.gtf
+Genome FASTA File: data/Ergobibamus_cyprinoides_CL.scaffolds.edited.fasta
+
+#### Total Features ####
+Total Reference Features (Strand '+' or '.'): 13911
+Total Predicted Features (Strand '+' or '.'): 9829
+
+#### Gene and Non-Gene Features ####
+Reference Genes: 3213
+Predicted Genes: 2317
+Reference Non-Gene Features (Exons excluded): 7021
+Predicted Non-Gene Features (Exons excluded): 5008
+
+#### Exon and Non-Exon Features ####
+Reference Exons: 3677
+Predicted Exons: 2504
+Reference Non-Exon Features: 10234
+Predicted Non-Exon Features: 7325
+
+#### Intron and Intergenic Features ####
+Reference Introns: 0
+Predicted Introns: 0
+Reference Intergenic Regions: 3230
+Predicted Intergenic Regions: 2340
+
+#### Gene Feature Metrics ####
+True Positives (TP): 1583
+False Positives (FP): 734
+False Negatives (FN): 1630
+Precision: 0.6832
+Recall: 0.4927
+F1-Score: 0.5725
+
+#### Exon Feature Metrics ####
+True Positives (TP): 1551
+False Positives (FP): 953
+False Negatives (FN): 2126
+Precision: 0.6194
+Recall: 0.4218
+F1-Score: 0.5019
+
+#### Intron Feature Metrics ####
+True Positives (TP): 0
+False Positives (FP): 0
+False Negatives (FN): 0
+Precision: 0.0000
+Recall: 0.0000
+F1-Score: 0.0000
+
+#### Intergenic Feature Metrics ####
+True Positives (TP): 1199
+False Positives (FP): 1141
+False Negatives (FN): 2031
+Precision: 0.5124
+Recall: 0.3712
+F1-Score: 0.4305
+
+#### All Features Metrics ####
+True Positives (TP): 4685
+False Positives (FP): 5144
+False Negatives (FN): 9226
+Precision: 0.4767
+Recall: 0.3368
+F1-Score: 0.3947
+
